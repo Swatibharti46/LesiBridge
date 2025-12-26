@@ -19,7 +19,12 @@ export interface LawyerProfile {
   rate: number;
   rating: number;
   verified: boolean;
-  specialty: string;
+  specialties: string[];
+  bio: string;
+  yearsExperience: number;
+  location: string;
+  education: string;
+  recentWork: string[];
 }
 
 export interface Bid {

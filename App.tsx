@@ -4,7 +4,8 @@ import { LandingPage } from './components/LandingPage';
 import { ClientDashboard } from './components/ClientDashboard';
 import { ClientIntake } from './components/ClientIntake';
 import { LawyerDashboard } from './components/LawyerDashboard';
-import { User, UserRole, CaseData, CaseStatus, Bid } from './types';
+import { LawyerDirectory } from './components/LawyerDirectory';
+import { User, UserRole, CaseData, CaseStatus, Bid, LawyerProfile } from './types';
 
 const MOCK_EXISTING_CASES: CaseData[] = [
   {
@@ -35,9 +36,84 @@ const MOCK_EXISTING_CASES: CaseData[] = [
   }
 ];
 
+const MOCK_LAWYERS: LawyerProfile[] = [
+  {
+    id: 'l1',
+    name: 'Sarah Jenkins, Esq.',
+    firm: 'Jenkins & Partners',
+    rate: 350,
+    rating: 4.9,
+    verified: true,
+    specialties: ['Corporate Law', 'Startup Finance', 'IP'],
+    yearsExperience: 12,
+    location: 'San Francisco, CA',
+    education: 'J.D., Stanford Law School',
+    bio: 'Sarah is a veteran startup attorney who has guided over 50 startups from formation to Series B. She specializes in cap table management, fundraising diligence, and co-founder dispute resolution.',
+    recentWork: [
+      'Represented Fintech startup in $5M Seed round',
+      'Restructured equity for pre-IPO SaaS company',
+      'Successfully negotiated co-founder exit for health-tech firm'
+    ]
+  },
+  {
+    id: 'l2',
+    name: 'David Chen',
+    firm: 'TechLegal Solutions',
+    rate: 275,
+    rating: 4.8,
+    verified: true,
+    specialties: ['Intellectual Property', 'SaaS Contracts', 'Data Privacy'],
+    yearsExperience: 8,
+    location: 'New York, NY',
+    education: 'J.D., Columbia University',
+    bio: 'David focuses on IP protection and commercial contracts for software companies. He previously worked as in-house counsel for a major cloud provider and understands the operational needs of scaling tech firms.',
+    recentWork: [
+      'Drafted Terms of Service for AI image generator',
+      'Filed 15+ software patents in 2023',
+      'Managed GDPR compliance audit for EU expansion'
+    ]
+  },
+  {
+    id: 'l3',
+    name: 'Amanda Ross',
+    firm: 'Ross Employment Law',
+    rate: 300,
+    rating: 4.7,
+    verified: true,
+    specialties: ['Employment Law', 'HR Compliance', 'Contractor Agreements'],
+    yearsExperience: 15,
+    location: 'Austin, TX',
+    education: 'J.D., University of Texas',
+    bio: 'Amanda helps remote-first startups navigate complex employment regulations across state lines. She ensures your hiring documents are ironclad and compliant with California and New York labor laws.',
+    recentWork: [
+      'Created remote work policy for 100+ person distributed team',
+      'Defended startup in contractor misclassification suit',
+      'Designed equity compensation plans for early employees'
+    ]
+  },
+  {
+    id: 'l4',
+    name: 'Michael Vance',
+    firm: 'Vance Legal Group',
+    rate: 450,
+    rating: 5.0,
+    verified: true,
+    specialties: ['M&A', 'Exit Strategy', 'Corporate Governance'],
+    yearsExperience: 20,
+    location: 'Boston, MA',
+    education: 'J.D., Harvard Law School',
+    bio: 'Michael advises on high-stakes mergers and acquisitions. If you are looking to sell your startup or acquire a competitor, Michael brings two decades of negotiation experience to the table.',
+    recentWork: [
+      'Lead counsel on $40M acquisition of AI startup',
+      'Advised board on hostile takeover defense',
+      'Structured cross-border merger with UK firm'
+    ]
+  }
+];
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [view, setView] = useState<'DASHBOARD' | 'INTAKE'>('DASHBOARD');
+  const [view, setView] = useState<'DASHBOARD' | 'INTAKE' | 'DIRECTORY'>('DASHBOARD');
   const [cases, setCases] = useState<CaseData[]>(MOCK_EXISTING_CASES);
 
   const handleLogin = (role: UserRole) => {
@@ -46,7 +122,12 @@ const App: React.FC = () => {
       name: role === UserRole.CLIENT ? 'Alex Founder' : 'Jessica Pearson',
       role: role
     });
-    setView('DASHBOARD');
+    // Reset view based on role
+    if (role === UserRole.CLIENT) {
+        setView('DASHBOARD');
+    } else {
+        setView('DASHBOARD'); // Lawyer only has dashboard for now
+    }
   };
 
   const handleLogout = () => {
@@ -92,9 +173,19 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleEnquireLawyer = (lawyer: LawyerProfile) => {
+    alert(`Enquiry sent to ${lawyer.name}.\n\nThey will receive your profile and contact you shortly regarding a consultation.`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <Navbar user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />
+      <Navbar 
+        user={user} 
+        onLogout={handleLogout} 
+        onSwitchRole={handleSwitchRole} 
+        onNavigate={(v) => setView(v)}
+        currentView={view}
+      />
       
       <main>
         {!user ? (
@@ -105,7 +196,7 @@ const App: React.FC = () => {
               <>
                 {view === 'DASHBOARD' && (
                   <ClientDashboard 
-                    cases={cases.filter(c => c.clientName === 'TechStartup Inc.' || c.id === 'case-002')} // Filter for demo
+                    cases={cases.filter(c => c.clientName === 'TechStartup Inc.' || c.id === 'case-002')} 
                     onNewCase={() => setView('INTAKE')} 
                     onAcceptBid={handleAcceptBid}
                   />
@@ -114,6 +205,12 @@ const App: React.FC = () => {
                   <ClientIntake 
                     onCaseCreated={handleCreateCase} 
                     onCancel={() => setView('DASHBOARD')} 
+                  />
+                )}
+                {view === 'DIRECTORY' && (
+                  <LawyerDirectory 
+                    lawyers={MOCK_LAWYERS}
+                    onEnquire={handleEnquireLawyer}
                   />
                 )}
               </>

@@ -1,24 +1,50 @@
 import React from 'react';
 import { UserRole, User } from '../types';
-import { Scale, LogOut, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { Scale, LogOut, User as UserIcon, ShieldCheck, LayoutGrid, Users } from 'lucide-react';
 
 interface NavbarProps {
   user: User | null;
   onLogout: () => void;
   onSwitchRole: () => void;
+  onNavigate?: (view: 'DASHBOARD' | 'DIRECTORY') => void;
+  currentView?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole, onNavigate, currentView }) => {
   return (
     <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Scale className="h-8 w-8 text-blue-400" />
-            <span className="font-bold text-xl tracking-tight">LexBridge</span>
-            <span className="hidden md:block ml-4 text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
-              Startup Law MVP
-            </span>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <Scale className="h-8 w-8 text-blue-400" />
+              <span className="font-bold text-xl tracking-tight">LexBridge</span>
+              <span className="hidden md:block ml-4 text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
+                Startup Law MVP
+              </span>
+            </div>
+
+            {/* Main Navigation for Clients */}
+            {user?.role === UserRole.CLIENT && onNavigate && (
+              <div className="hidden md:flex items-center space-x-1">
+                <button
+                  onClick={() => onNavigate('DASHBOARD')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                    currentView === 'DASHBOARD' || currentView === 'INTAKE' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <LayoutGrid className="w-4 h-4" /> My Cases
+                </button>
+                <button
+                  onClick={() => onNavigate('DIRECTORY')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                    currentView === 'DIRECTORY' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Users className="w-4 h-4" /> Browse Lawyers
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
