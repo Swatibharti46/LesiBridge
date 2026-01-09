@@ -1,3 +1,4 @@
+
 export enum UserRole {
   CLIENT = 'CLIENT',
   LAWYER = 'LAWYER',
@@ -17,6 +18,20 @@ export enum DisputeStatus {
   RESOLVED = 'Resolved'
 }
 
+export interface SecurityLog {
+  id: string;
+  event: string;
+  timestamp: string;
+  severity: 'Low' | 'Medium' | 'High';
+  user: string;
+}
+
+export interface SystemHealth {
+  service: string;
+  status: 'Healthy' | 'Degraded' | 'Down';
+  latency: string;
+}
+
 export interface LawyerRating {
   rating: number;
   feedback: string;
@@ -29,7 +44,7 @@ export interface LawyerProfile {
   name:string;
   firm: string;
   rate: number; 
-  rating: number; // This will now be an average, calculated from ratings
+  rating: number;
   verified: boolean;
   specialties: string[];
   bio: string;
@@ -39,7 +54,7 @@ export interface LawyerProfile {
   recentWork: string[];
   barRegistrationNumber: string;
   availability: string[];
-  status: 'PENDING' | 'APPROVED' | 'DEACTIVATED';
+  status: 'APPROVED' | 'PENDING' | 'DEACTIVATED';
   ratings: LawyerRating[];
 }
 
@@ -56,13 +71,11 @@ export interface Consultation {
   scheduledTime: string;
   meetLink: string;
   feedbackGiven?: boolean;
-  // New fields for the Consultation Vault
   summaryNotes?: string;
   actionItems?: string[];
-  documents?: { name: string; url: string }[];
+  documents?: { name: string; url: string; encrypted?: boolean }[];
 }
 
-// Renamed from Dispute to clarify its purpose
 export interface InternalDispute {
     id: string;
     consultationId: string;
@@ -81,7 +94,6 @@ export interface User {
   balance?: number;
 }
 
-// New Types for the Public Dispute Marketplace
 export interface Bid {
   id: string;
   lawyerId: string;
@@ -95,8 +107,12 @@ export interface MarketplaceDispute {
   id: string;
   title: string;
   category: string;
-  clientName: string; // Could be anonymous
+  clientName: string;
   postedDate: string;
   description: string;
   bids: Bid[];
+  caseType?: string;
+  riskLevel?: 'Low' | 'Medium' | 'High';
+  urgency?: 'Low' | 'Medium' | 'High';
+  roadmap?: string[];
 }

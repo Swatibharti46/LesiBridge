@@ -1,5 +1,8 @@
 {
-  "name": "LexBridge",
-  "description": "A niche legal marketplace connecting startups with vetted lawyers using AI-driven intake summaries and secure escrow flows.",
-  "requestFramePermissions": []
+  "name": "NyayaAI",
+  "description": "An AI-powered legal marketplace connecting startups with vetted lawyers using enterprise-grade AI triage and secure vault flows.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
 }

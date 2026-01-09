@@ -1,47 +1,49 @@
 import React from 'react';
 import { UserRole, User } from '../types';
-import { Scale, LogOut, User as UserIcon, ShieldCheck, LayoutGrid, Users } from 'lucide-react';
+import { Scale, LogOut, User as UserIcon, ShieldCheck, LayoutGrid, Users, Activity } from 'lucide-react';
 
 interface NavbarProps {
   user: User | null;
   onLogout: () => void;
   onSwitchRole: () => void;
-  onNavigate?: (view: 'DASHBOARD' | 'DIRECTORY' | 'BOOKING') => void;
+  onNavigate?: (view: 'DASHBOARD' | 'DIRECTORY' | 'BOOKING' | 'MARKETPLACE') => void;
   currentView?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole, onNavigate, currentView }) => {
   return (
-    <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-slate-900 text-white shadow-2xl sticky top-0 z-50 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-20">
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <Scale className="h-8 w-8 text-blue-400" />
-              <span className="font-bold text-xl tracking-tight">LexBridge</span>
-              <span className="hidden md:block ml-4 text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
-                MVP
-              </span>
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => onNavigate?.('DASHBOARD')}>
+              <div className="p-2 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
+                <Scale className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-black text-xl tracking-tighter uppercase">NyayaAI</span>
+                <span className="text-[9px] font-bold text-slate-500 tracking-[0.2em] uppercase leading-none">Enterprise Legal Hub</span>
+              </div>
             </div>
 
             {/* Main Navigation for Clients */}
             {user?.role === UserRole.CLIENT && onNavigate && (
-              <div className="hidden md:flex items-center space-x-1">
+              <div className="hidden lg:flex items-center space-x-1">
                 <button
                   onClick={() => onNavigate('DASHBOARD')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                    currentView === 'DASHBOARD' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                    currentView === 'DASHBOARD' ? 'bg-slate-800 text-blue-400' : 'text-slate-500 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <LayoutGrid className="w-4 h-4" /> My Consultations
+                  <div className="flex items-center gap-2"><LayoutGrid className="w-3.5 h-3.5" /> Dashboard</div>
                 </button>
                 <button
                   onClick={() => onNavigate('DIRECTORY')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                    currentView === 'DIRECTORY' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                    currentView === 'DIRECTORY' ? 'bg-slate-800 text-blue-400' : 'text-slate-500 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <Users className="w-4 h-4" /> Browse Lawyers
+                  <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Attorneys</div>
                 </button>
               </div>
             )}
@@ -50,33 +52,31 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole, on
           <div className="flex items-center space-x-4">
             {user && (
               <>
-                <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg border border-slate-700">
-                  <UserIcon className="h-4 w-4 text-slate-400" />
-                  <span className="text-sm font-medium">
-                    {user.role === UserRole.LAWYER ? 'Attorney View' : 'Client View'}
+                <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700">
+                  <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {user.role === UserRole.LAWYER ? 'Lawyer Node' : 'Client Node'}
                   </span>
                 </div>
                 
-                {user.role === UserRole.LAWYER && (
-                   <div className="hidden sm:flex items-center gap-1 text-emerald-400 text-xs font-semibold px-2 py-1 bg-emerald-400/10 rounded-full border border-emerald-400/20">
-                     <ShieldCheck className="w-3 h-3" /> VERIFIED
-                   </div>
-                )}
-
-                <button
-                  onClick={onSwitchRole}
-                  className="text-xs text-slate-400 hover:text-white underline decoration-dotted underline-offset-4"
-                >
-                  Switch View (Demo)
-                </button>
-
-                <button
-                  onClick={onLogout}
-                  className="p-2 rounded-full hover:bg-slate-800 transition-colors"
-                  aria-label="Logout"
-                >
-                  <LogOut className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-end mr-2">
+                    <span className="text-xs font-bold text-white">{user.name}</span>
+                    <button
+                      onClick={onSwitchRole}
+                      className="text-[9px] font-black text-slate-500 hover:text-blue-400 uppercase tracking-widest transition-colors"
+                    >
+                      Cycle Identity
+                    </button>
+                  </div>
+                  <button
+                    onClick={onLogout}
+                    className="p-3 bg-slate-800 text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-lg"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </button>
+                </div>
               </>
             )}
           </div>

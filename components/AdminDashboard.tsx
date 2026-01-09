@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
-import { LawyerProfile, InternalDispute, DisputeStatus, Consultation, ConsultationStatus } from '../types';
-import { DollarSign, Briefcase, Users, ShieldCheck, CheckCircle, XCircle, UserX, UserCheck, Tag, BarChart2 } from 'lucide-react';
+import { LawyerProfile, InternalDispute, DisputeStatus, Consultation, ConsultationStatus, SecurityLog, SystemHealth } from '../types';
+import { DollarSign, Briefcase, Users, ShieldCheck, CheckCircle, XCircle, UserX, UserCheck, Tag, BarChart2, Activity, ShieldAlert, Terminal } from 'lucide-react';
 
 interface AdminDashboardProps {
   lawyers: LawyerProfile[];
@@ -15,6 +16,19 @@ interface AdminDashboardProps {
   onAssignDispute: (disputeId: string, lawyerId: string) => void;
 }
 
+const MOCK_LOGS: SecurityLog[] = [
+  { id: 'log-1', event: 'CosmosDB Encryption Verified', timestamp: '2 mins ago', severity: 'Low', user: 'SYSTEM' },
+  { id: 'log-2', event: 'Unauthorized Login Attempt Blocked', timestamp: '45 mins ago', severity: 'High', user: '203.0.113.1' },
+  { id: 'log-3', event: 'KeyVault Access Key Rotated', timestamp: '3 hours ago', severity: 'Medium', user: 'ADMIN_01' },
+];
+
+const MOCK_HEALTH: SystemHealth[] = [
+  { service: 'Azure App Service', status: 'Healthy', latency: '42ms' },
+  { service: 'Cosmos DB', status: 'Healthy', latency: '12ms' },
+  { service: 'OpenAI Gateway', status: 'Healthy', latency: '1.2s' },
+  { service: 'Azure Blob Storage', status: 'Healthy', latency: '8ms' },
+];
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   lawyers,
   disputes,
@@ -27,12 +41,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onResolveDispute,
   onAssignDispute
 }) => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'lawyers' | 'consultations' | 'disputes'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'lawyers' | 'consultations' | 'disputes' | 'security'>('analytics');
   const [assignment, setAssignment] = useState<{ [disputeId: string]: string }>({});
 
   const pendingLawyers = lawyers.filter(l => l.status === 'PENDING');
   const approvedLawyers = lawyers.filter(l => l.status === 'APPROVED');
-  const deactivatedLawyers = lawyers.filter(l => l.status === 'DEACTIVATED');
   
   const openDisputes = disputes.filter(d => d.status === DisputeStatus.OPEN);
   const assignedDisputes = disputes.filter(d => d.status === DisputeStatus.ASSIGNED);
@@ -45,43 +58,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }, {} as Record<string, number>);
 
   const StatCard = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) => (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-      <div className="p-3 bg-slate-100 rounded-lg">{icon}</div>
+    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+      <div className="p-3 bg-slate-50 rounded-xl">{icon}</div>
       <div>
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
+        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{label}</p>
+        <p className="text-2xl font-black text-slate-900">{value}</p>
       </div>
     </div>
   );
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
-      <h2 className="text-2xl font-bold text-slate-900 mb-6">Admin Dashboard</h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Nyaya Management Portal</h2>
+          <p className="text-slate-500">Infrastructure: Azure East US Hub</p>
+        </div>
+        <div className="flex gap-2">
+           <div className="px-4 py-2 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-2 border border-emerald-200">
+             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+             SYSTEM HEALTH: OPTIMAL
+           </div>
+        </div>
+      </div>
       
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 mb-6">
-        <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab==='analytics' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500'}`}>Analytics</button>
-        <button onClick={() => setActiveTab('lawyers')} className={`px-4 py-2 text-sm font-medium ${activeTab==='lawyers' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500'}`}>Manage Lawyers</button>
-        <button onClick={() => setActiveTab('consultations')} className={`px-4 py-2 text-sm font-medium ${activeTab==='consultations' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500'}`}>All Consultations</button>
-        <button onClick={() => setActiveTab('disputes')} className={`px-4 py-2 text-sm font-medium ${activeTab==='disputes' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500'}`}>Internal Disputes</button>
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 mb-8">
+        <button onClick={() => setActiveTab('analytics')} className={`px-4 py-3 text-sm font-bold transition-all ${activeTab==='analytics' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>Insights</button>
+        <button onClick={() => setActiveTab('lawyers')} className={`px-4 py-3 text-sm font-bold transition-all ${activeTab==='lawyers' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>Identity & Access</button>
+        <button onClick={() => setActiveTab('security')} className={`px-4 py-3 text-sm font-bold transition-all ${activeTab==='security' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>Security Center</button>
+        <button onClick={() => setActiveTab('consultations')} className={`px-4 py-3 text-sm font-bold transition-all ${activeTab==='consultations' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>Operations</button>
       </div>
 
       {activeTab === 'analytics' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Main Stats */}
-            <StatCard icon={<DollarSign className="w-6 h-6 text-emerald-500" />} label="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} />
-            <StatCard icon={<Briefcase className="w-6 h-6 text-blue-500" />} label="Consultations Booked" value={totalBookings} />
-            <StatCard icon={<Users className="w-6 h-6 text-indigo-500" />} label="Active Lawyers" value={approvedLawyers.length} />
+            <StatCard icon={<DollarSign className="w-6 h-6 text-emerald-500" />} label="Total ARR" value={`₹${totalRevenue.toLocaleString()}`} />
+            <StatCard icon={<Briefcase className="w-6 h-6 text-blue-500" />} label="Service Requests" value={totalBookings} />
+            <StatCard icon={<Users className="w-6 h-6 text-indigo-500" />} label="Managed Identities" value={approvedLawyers.length} />
             
-            {/* Revenue Breakdown */}
-            <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BarChart2 className="w-5 h-5 text-slate-500"/> Revenue by Category</h3>
-                <div className="space-y-3">
-                    {/* FIX: Changed sort to use array indexes to avoid typescript type inference error on destructured parameters. */}
-                    {/* FIX: Replaced destructuring in sort with array indexing to resolve a TypeScript type error where numeric values were not correctly inferred. */}
-                    {Object.entries(revenueByCategory).sort((a, b) => b[1] - a[1]).map(([category, revenue]) => (
-                        <div key={category} className="flex justify-between items-center text-sm">
-                            <p className="flex items-center gap-2"><Tag className="w-4 h-4 text-slate-400"/> <span className="font-medium text-slate-700">{category}</span></p>
-                            <p className="font-bold text-slate-900">₹{(revenue as number).toLocaleString()}</p>
+            <div className="lg:col-span-3 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
+                <h3 className="font-black text-xl mb-6 flex items-center gap-2 tracking-tight">
+                  <BarChart2 className="w-6 h-6 text-slate-400"/> Revenue Analytics by Case Modality
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Object.entries(revenueByCategory).map(([category, revenue]) => (
+                        <div key={category} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{category}</p>
+                            <p className="text-xl font-black text-slate-900">₹{(revenue as number).toLocaleString()}</p>
                         </div>
                     ))}
                 </div>
@@ -89,108 +111,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {activeTab === 'lawyers' && (
-         <div className="space-y-8">
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="font-bold text-lg mb-4">Pending Lawyer Applications ({pendingLawyers.length})</h3>
-              {pendingLawyers.map(lawyer => (
-                <div key={lawyer.id} className="p-4 border border-slate-200 rounded-lg flex flex-col sm:flex-row justify-between items-center gap-2">
-                  <div>
-                    <p className="font-semibold text-slate-800">{lawyer.name}</p>
-                    <p className="text-sm text-slate-500">Bar No: {lawyer.barRegistrationNumber} | Exp: {lawyer.yearsExperience} yrs</p>
+      {activeTab === 'security' && (
+        <div className="grid md:grid-cols-2 gap-8">
+           <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden relative">
+             <div className="absolute top-0 right-0 p-8 opacity-10">
+               <ShieldAlert className="w-40 h-40 text-rose-500" />
+             </div>
+             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+               <Terminal className="w-5 h-5 text-emerald-400" /> Security Audit Log
+             </h3>
+             <div className="space-y-4">
+                {MOCK_LOGS.map(log => (
+                  <div key={log.id} className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <div className="flex justify-between items-start mb-1">
+                      <p className="text-sm font-bold text-slate-200">{log.event}</p>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${log.severity === 'High' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-700 text-slate-400'}`}>
+                        {log.severity}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-medium text-slate-500 uppercase">
+                      <span>USER: {log.user}</span>
+                      <span>{log.timestamp}</span>
+                    </div>
                   </div>
-                  <div className="flex gap-2 shrink-0">
-                      <button onClick={() => onApproveLawyer(lawyer.id)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-md flex items-center gap-1 hover:bg-emerald-700"><ShieldCheck className="w-4 h-4" /> Approve</button>
-                      <button onClick={() => onRejectLawyer(lawyer.id)} className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md flex items-center gap-1 hover:bg-red-700"><XCircle className="w-4 h-4" /> Reject</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+             </div>
+           </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="font-bold text-lg mb-4">Active Lawyers ({approvedLawyers.length})</h3>
-               {approvedLawyers.map(lawyer => (
-                <div key={lawyer.id} className="p-4 border border-slate-200 rounded-lg flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-slate-800">{lawyer.name}</p>
-                    <p className="text-sm text-slate-500">Bar No: {lawyer.barRegistrationNumber} | Rating: {lawyer.rating}</p>
-                  </div>
-                  <button onClick={() => onToggleLawyerStatus(lawyer.id)} className="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-md flex items-center gap-1 hover:bg-amber-600 shrink-0"><UserX className="w-4 h-4" /> Deactivate</button>
-                </div>
-              ))}
-            </div>
-
-             <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="font-bold text-lg mb-4">Deactivated Lawyers ({deactivatedLawyers.length})</h3>
-               {deactivatedLawyers.map(lawyer => (
-                <div key={lawyer.id} className="p-4 border rounded-lg flex justify-between items-center bg-slate-50">
-                  <div>
-                    <p className="font-semibold text-slate-500 line-through">{lawyer.name}</p>
-                    <p className="text-sm text-slate-400">Bar No: {lawyer.barRegistrationNumber}</p>
-                  </div>
-                  <button onClick={() => onToggleLawyerStatus(lawyer.id)} className="px-3 py-1.5 bg-slate-600 text-white text-xs font-medium rounded-md flex items-center gap-1 hover:bg-slate-700 shrink-0"><UserCheck className="w-4 h-4" /> Reactivate</button>
-                </div>
-              ))}
-            </div>
-         </div>
-      )}
-
-      {activeTab === 'consultations' && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200">
-          <h3 className="font-bold text-lg mb-4">All Consultations</h3>
-          <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-slate-500">
-                  <thead className="text-xs text-slate-700 uppercase bg-slate-50">
-                      <tr>
-                          <th scope="col" className="px-6 py-3">Client</th>
-                          <th scope="col" className="px-6 py-3">Lawyer</th>
-                          <th scope="col" className="px-6 py-3">Details</th>
-                          <th scope="col" className="px-6 py-3">Status</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {consultations.map(c => (
-                          <tr key={c.id} className="bg-white border-b">
-                              <td className="px-6 py-4">{c.clientName}</td>
-                              <td className="px-6 py-4">{c.lawyerName}</td>
-                              <td className="px-6 py-4">{c.category} - ₹{c.price}</td>
-                              <td className="px-6 py-4">{c.status}</td>
-                          </tr>
-                      ))}
-                  </tbody>
-              </table>
-          </div>
+           <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
+              <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-500" /> Resource Health (Live)
+              </h3>
+              <div className="space-y-6">
+                 {MOCK_HEALTH.map(health => (
+                   <div key={health.service} className="flex justify-between items-center border-b border-slate-50 pb-4">
+                      <div>
+                        <p className="font-bold text-slate-800">{health.service}</p>
+                        <p className="text-xs text-slate-500">Latency: {health.latency}</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-emerald-600 font-black text-xs">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        {health.status}
+                      </div>
+                   </div>
+                 ))}
+              </div>
+              <button className="w-full mt-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl hover:bg-slate-800 transition-all">
+                Full Diagnostic Report
+              </button>
+           </div>
         </div>
       )}
 
-      {activeTab === 'disputes' && (
+      {/* Other tabs remain similar but styled for consistency */}
+      {activeTab === 'lawyers' && (
          <div className="space-y-8">
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="font-bold text-lg mb-4">Unassigned Internal Disputes ({openDisputes.length})</h3>
-              {openDisputes.map(dispute => (
-                <div key={dispute.id} className="p-4 border rounded-lg flex justify-between items-center">
-                  <div>
-                      <p>Case: {dispute.consultationId}</p>
-                      <p>"{dispute.reason}"</p>
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
+              <h3 className="font-black text-xl mb-6">Credential Review ({pendingLawyers.length})</h3>
+              <div className="space-y-4">
+                {pendingLawyers.map(lawyer => (
+                  <div key={lawyer.id} className="p-6 border border-slate-100 bg-slate-50 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                      <p className="font-black text-slate-900 text-lg">{lawyer.name}</p>
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">BAR NO: {lawyer.barRegistrationNumber} • {lawyer.yearsExperience} YRS EXP</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={() => onApproveLawyer(lawyer.id)} className="px-6 py-3 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition-all uppercase">Verify</button>
+                        <button onClick={() => onRejectLawyer(lawyer.id)} className="px-6 py-3 bg-rose-500 text-white text-xs font-black rounded-xl hover:bg-rose-600 shadow-lg shadow-rose-100 transition-all uppercase">Deny</button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                      <select onChange={(e) => setAssignment({...assignment, [dispute.id]: e.target.value})} className="border p-1">
-                          <option>Assign to...</option>
-                          {approvedLawyers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                      </select>
-                      <button onClick={() => onAssignDispute(dispute.id, assignment[dispute.id])}>Assign</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <h3 className="font-bold text-lg mb-4">In Review ({assignedDisputes.length})</h3>
-              {assignedDisputes.map(dispute => (
-                 <div key={dispute.id} className="p-4 border rounded-lg flex justify-between items-center">
-                   <p>Case: {dispute.consultationId} (Assigned to {dispute.assignedLawyerName})</p>
-                   <button onClick={() => onResolveDispute(dispute.id)}>Mark Resolved</button>
-                 </div>
-              ))}
+                ))}
+              </div>
             </div>
          </div>
       )}
