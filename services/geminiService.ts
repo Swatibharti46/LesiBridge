@@ -49,6 +49,7 @@ export const analyzeLegalIntake = async (userDescription: string): Promise<Intak
               description: "A very rough estimated price range for this service (e.g. '$500 - $1000')."
             }
           },
+          propertyOrdering: ["title", "summary", "keyIssues", "suggestedCategory", "estimatedBudget"],
           required: ["title", "summary", "keyIssues", "suggestedCategory", "estimatedBudget"]
         }
       }
@@ -72,4 +73,28 @@ export const analyzeLegalIntake = async (userDescription: string): Promise<Intak
       estimatedBudget: "TBD"
     };
   }
+};
+
+export const summarizeConsultation = async (problemDescription: string, lawyerAdvice: string): Promise<string> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: `As an expert paralegal, please summarize the following legal consultation into a few key takeaways for the client. The summary should be clear, concise, and easy for a non-lawyer to understand.
+
+            Client's Initial Problem: "${problemDescription}"
+            
+            Lawyer's Advice: "${lawyerAdvice}"`,
+             config: {
+                systemInstruction: "You are a helpful AI assistant that summarizes legal conversations into clear, actionable notes for clients. Focus on the core advice and next steps.",
+             }
+        });
+        const text = response.text;
+        if (!text) {
+            return "Could not generate summary at this time.";
+        }
+        return text;
+    } catch (error) {
+        console.error("Error summarizing consultation:", error);
+        return "Summary could not be generated due to a technical issue.";
+    }
 };

@@ -6,7 +6,7 @@ interface NavbarProps {
   user: User | null;
   onLogout: () => void;
   onSwitchRole: () => void;
-  onNavigate?: (view: 'DASHBOARD' | 'DIRECTORY') => void;
+  onNavigate?: (view: 'DASHBOARD' | 'DIRECTORY' | 'BOOKING') => void;
   currentView?: string;
 }
 
@@ -20,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole, on
               <Scale className="h-8 w-8 text-blue-400" />
               <span className="font-bold text-xl tracking-tight">LexBridge</span>
               <span className="hidden md:block ml-4 text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
-                Startup Law MVP
+                MVP
               </span>
             </div>
 
@@ -30,10 +30,10 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onSwitchRole, on
                 <button
                   onClick={() => onNavigate('DASHBOARD')}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                    currentView === 'DASHBOARD' || currentView === 'INTAKE' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    currentView === 'DASHBOARD' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <LayoutGrid className="w-4 h-4" /> My Cases
+                  <LayoutGrid className="w-4 h-4" /> My Consultations
                 </button>
                 <button
                   onClick={() => onNavigate('DIRECTORY')}

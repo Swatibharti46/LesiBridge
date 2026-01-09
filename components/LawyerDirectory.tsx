@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import { LawyerProfile } from '../types';
-import { Star, ShieldCheck, MapPin, Briefcase, GraduationCap, X, Check, MessageCircle } from 'lucide-react';
+import { Star, ShieldCheck, MapPin, Briefcase, GraduationCap, X, Check, MessageCircle, Clock } from 'lucide-react';
 
 interface LawyerDirectoryProps {
   lawyers: LawyerProfile[];
-  onEnquire: (lawyer: LawyerProfile) => void;
+  onRequestConsultation: (lawyer: LawyerProfile, timeSlot: string) => void;
 }
 
-export const LawyerDirectory: React.FC<LawyerDirectoryProps> = ({ lawyers, onEnquire }) => {
+export const LawyerDirectory: React.FC<LawyerDirectoryProps> = ({ lawyers, onRequestConsultation }) => {
   const [selectedLawyer, setSelectedLawyer] = useState<LawyerProfile | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string>('');
 
-  const handleEnquireClick = (e: React.MouseEvent, lawyer: LawyerProfile) => {
-    e.stopPropagation();
-    onEnquire(lawyer);
+  const handleCardClick = (lawyer: LawyerProfile) => {
+    setSelectedSlot(''); // Reset slot selection when opening modal
+    setSelectedLawyer(lawyer);
   };
+  
+  const approvedLawyers = lawyers.filter(l => l.status === 'APPROVED');
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-900">Attorney Directory</h2>
-        <p className="text-slate-500">Browse vetted startup lawyers and request consultations.</p>
+        <p className="text-slate-500">Browse vetted and approved startup lawyers for a consultation.</p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {lawyers.map((lawyer) => (
+        {approvedLawyers.map((lawyer) => (
           <div 
             key={lawyer.id} 
-            onClick={() => setSelectedLawyer(lawyer)}
+            onClick={() => handleCardClick(lawyer)}
             className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden flex flex-col"
           >
             <div className="p-6 flex-1">
@@ -80,11 +83,8 @@ export const LawyerDirectory: React.FC<LawyerDirectoryProps> = ({ lawyers, onEnq
             </div>
             
             <div className="bg-slate-50 p-3 border-t border-slate-100 flex justify-center">
-               <button 
-                 onClick={(e) => handleEnquireClick(e, lawyer)}
-                 className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2"
-               >
-                 <MessageCircle className="w-4 h-4" /> Enquire Now
+               <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                 <MessageCircle className="w-4 h-4" /> View Profile & Book
                </button>
             </div>
           </div>
@@ -94,8 +94,8 @@ export const LawyerDirectory: React.FC<LawyerDirectoryProps> = ({ lawyers, onEnq
       {/* Detail Modal */}
       {selectedLawyer && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 md:p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 md:p-8 overflow-y-auto">
               <div className="flex justify-between items-start mb-6">
                  <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-2xl">
@@ -114,77 +114,54 @@ export const LawyerDirectory: React.FC<LawyerDirectoryProps> = ({ lawyers, onEnq
               </div>
 
               <div className="space-y-6">
-                <div className="flex flex-wrap gap-2">
-                   {selectedLawyer.specialties.map((s, i) => (
-                     <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-100">
-                       {s}
-                     </span>
-                   ))}
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-slate-900">{selectedLawyer.rating}</div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wide">Rating</div>
-                  </div>
-                  <div className="text-center border-l border-slate-200">
-                    <div className="text-2xl font-bold text-slate-900">{selectedLawyer.yearsExperience}+</div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wide">Years</div>
-                  </div>
-                  <div className="text-center border-l border-slate-200">
-                    <div className="text-2xl font-bold text-slate-900">${selectedLawyer.rate}</div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wide">Hourly</div>
-                  </div>
-                  <div className="text-center border-l border-slate-200">
-                     <div className="flex items-center justify-center h-8">
-                       <ShieldCheck className="w-6 h-6 text-emerald-500" />
-                     </div>
-                     <div className="text-xs text-emerald-600 font-bold uppercase tracking-wide">Verified</div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-slate-400" /> Professional Bio
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-slate-400" /> Available Time Slots
                   </h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">
-                    {selectedLawyer.bio}
-                  </p>
+                  {selectedLawyer.availability.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {selectedLawyer.availability.map((slot) => (
+                        <button
+                          key={slot}
+                          onClick={() => setSelectedSlot(slot)}
+                          className={`p-2 rounded-lg border text-sm text-left font-medium transition-colors ${
+                            selectedSlot === slot
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 bg-slate-100 p-3 rounded-lg">
+                      This lawyer has not listed their availability. Please check back later.
+                    </p>
+                  )}
                 </div>
 
-                <div>
-                  <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4 text-slate-400" /> Education
-                  </h3>
-                  <p className="text-slate-600 text-sm">{selectedLawyer.education}</p>
-                </div>
-
-                <div>
-                  <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <Check className="w-4 h-4 text-slate-400" /> Recent Work History
-                  </h3>
-                  <ul className="space-y-2">
-                    {selectedLawyer.recentWork.map((work, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                        {work}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <p className="text-slate-600 leading-relaxed text-sm">{selectedLawyer.bio}</p>
+                {/* Other details can be added here if needed */}
               </div>
-              
-              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-3">
-                <button onClick={() => setSelectedLawyer(null)} className="px-4 py-2 text-slate-600 font-medium hover:text-slate-900">
-                  Close
-                </button>
-                <button 
-                  onClick={(e) => { setSelectedLawyer(null); onEnquire(selectedLawyer); }}
-                  className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold flex items-center gap-2 shadow-lg"
-                >
-                  <MessageCircle className="w-4 h-4" /> Request Consultation
-                </button>
-              </div>
+            </div>
+
+            <div className="mt-auto p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button onClick={() => setSelectedLawyer(null)} className="px-4 py-2 text-slate-600 font-medium hover:text-slate-900">
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  if (selectedLawyer) {
+                    onRequestConsultation(selectedLawyer, selectedSlot);
+                  }
+                  setSelectedLawyer(null);
+                }}
+                disabled={!selectedSlot}
+                className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MessageCircle className="w-4 h-4" /> Request Consultation
+              </button>
             </div>
           </div>
         </div>
