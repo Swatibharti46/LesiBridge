@@ -1,7 +1,6 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export interface IntakeAnalysisResult {
   title: string;
@@ -49,7 +48,8 @@ export const analyzeLegalIntake = async (userDescription: string, language: stri
       }
     });
 
-    return JSON.parse(response.text) as IntakeAnalysisResult;
+    const text = response.text || "{}";
+    return JSON.parse(text) as IntakeAnalysisResult;
   } catch (error) {
     console.error("Error analyzing intake:", error);
     return {
@@ -77,7 +77,6 @@ export interface DocumentExplanationResult {
   extractedMetadata?: Record<string, string>;
 }
 
-// Simulates Azure Form Recognizer using Gemini's Vision
 export const analyzeDocumentImage = async (base64Data: string, mimeType: string): Promise<DocumentExplanationResult> => {
   try {
     const response = await ai.models.generateContent({
@@ -110,7 +109,8 @@ export const analyzeDocumentImage = async (base64Data: string, mimeType: string)
         }
       }
     });
-    return JSON.parse(response.text) as DocumentExplanationResult;
+    const text = response.text || "{}";
+    return JSON.parse(text) as DocumentExplanationResult;
   } catch (error) {
     console.error("Error analyzing doc image:", error);
     throw error;
@@ -138,7 +138,8 @@ export const explainLegalDocument = async (docText: string): Promise<DocumentExp
         }
       }
     });
-    return JSON.parse(response.text) as DocumentExplanationResult;
+    const text = response.text || "{}";
+    return JSON.parse(text) as DocumentExplanationResult;
   } catch (error) {
     console.error("Error explaining doc:", error);
     throw error;
