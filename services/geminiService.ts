@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Ensure API key is treated as a string to satisfy TypeScript
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+const apiKey = process.env.API_KEY as string;
+const ai = new GoogleGenAI({ apiKey });
 
 export interface IntakeAnalysisResult {
   title: string;
