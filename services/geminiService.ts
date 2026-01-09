@@ -1,8 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Standardizing API access to ensure tsc is happy during Vercel build
-const apiKey = process.env.API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
+// Ensure API key is treated as a string to satisfy TypeScript
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export interface IntakeAnalysisResult {
   title: string;
