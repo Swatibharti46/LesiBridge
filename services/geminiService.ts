@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+// Standardizing API access to ensure tsc is happy during Vercel build
+const apiKey = process.env.API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
 
 export interface IntakeAnalysisResult {
   title: string;
@@ -39,8 +41,8 @@ export const analyzeLegalIntake = async (userDescription: string, language: stri
             caseType: { type: Type.STRING },
             confidenceScore: { type: Type.NUMBER },
             simpleExplanation: { type: Type.STRING },
-            riskLevel: { type: Type.STRING, enum: ['Low', 'Medium', 'High'] },
-            urgency: { type: Type.STRING, enum: ['Low', 'Medium', 'High'] },
+            riskLevel: { type: Type.STRING },
+            urgency: { type: Type.STRING },
             roadmap: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
           required: ["title", "summary", "keyIssues", "suggestedCategory", "estimatedBudget", "caseType", "confidenceScore", "simpleExplanation", "riskLevel", "urgency", "roadmap"]
